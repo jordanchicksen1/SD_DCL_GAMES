@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using static UnityEngine.UI.Image;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController3D : MonoBehaviour
@@ -22,40 +23,24 @@ public class PlayerController3D : MonoBehaviour
     public float speed = 5f;
     public float jumpForce = 5f;
     public float SpeedMultiplier;
-    private float RunSpeed;
 
-    private GameObject InteractableObject;
-    public LayerMask Interact;
+    public LayerMask FootBallLayer;
     [SerializeField]
     private Transform RayPoint;
-
-
-    //Player Assortment Manager
     [SerializeField]
-    private MultiplayerEventSystem eventSystem;
-    [SerializeField] private GameObject PauseFirstSelect, InventoryFirstSelect;
-
-    [Header("Knockback")]
+    private float RayDistance;
+    public int _kickForce;
+    [SerializeField] private float upAngle = 30f;
+    [SerializeField] private Transform playerPositionIndicator, playerAimIndicator;
     [SerializeField]
-    private float knockbackDrag = 5f; // higher = knockback fades out faster
-    private Vector3 knockbackVelocity;
+    private float _floorOffset;
     [SerializeField]
-    private float throwForce;
+    private float kickRadius = 0.5f;
 
-  
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         playerInput = GetComponent<PlayerInput>();
-    }
-
-    // Called by external systems (e.g. BombManager) to push the player.
-    // Needed because normal movement uses MovePosition every FixedUpdate,
-    // which would otherwise instantly cancel out any physics force applied
-    // directly to the Rigidbody (like AddExplosionForce).
-    public void ApplyKnockback(Vector3 force)
-    {
-        knockbackVelocity += force;
     }
 
     void Start()
@@ -64,9 +49,6 @@ public class PlayerController3D : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         playerInput.defaultActionMap = "UI";
         Cursor.lockState = CursorLockMode.None;
-
-        RunSpeed = speed * SpeedMultiplier;
-
         playerInput = GetComponent<PlayerInput>();
     }
 
@@ -78,16 +60,12 @@ public class PlayerController3D : MonoBehaviour
         moveInput = new Vector3(input.x, 0f, input.y);
     }
 
-    //Inventory System
 
-    // LOOK
     public void OnLook(InputAction.CallbackContext context)
     {
         lookInput = context.ReadValue<Vector2>();
     }
 
-
-    // Pause/Play
 
     public void OnJump(InputAction.CallbackContext context)
     {
@@ -109,47 +87,67 @@ public class PlayerController3D : MonoBehaviour
         }
     }
 
-    public void OnInteract(InputAction.CallbackContext context)
+    public void OnKick(InputAction.CallbackContext context)
     {
+        Collider[] hits = Physics.OverlapSphere(RayPoint.position, kickRadius, FootBallLayer);
 
+        if (hits.Length > 0)
+        {
+            Rigidbody rb = hits[0].attachedRigidbody;
+            if (rb != null)
+            {
+                Quaternion tiltRotation = Quaternion.AngleAxis(-upAngle, transform.right);
+                Vector3 finalDirection = tiltRotation * RayPoint.forward;
+
+                rb.linearVelocity = Vector3.zero;
+                rb.AddForce(finalDirection * _kickForce, ForceMode.Impulse);
+            }
+        }
     }
 
-    public void OnGameSelection(InputAction.CallbackContext context)
+    private void OnDrawGizmosSelected()
     {
-        if (context.performed)
-            SceneManager.LoadScene("GameSelect");
+        if (RayPoint == null) return;
+
+        // Check overlap live in editor so the gizmo color reflects whether it'd currently hit
+        bool wouldHit = Physics.CheckSphere(RayPoint.position, kickRadius, FootBallLayer);
+
+        Gizmos.color = wouldHit ? Color.red : Color.green;
+        Gizmos.DrawWireSphere(RayPoint.position, kickRadius);
+
+        // Filled version at low alpha so it's easier to see the volume, not just the outline
+        Gizmos.color = wouldHit
+            ? new Color(1f, 0f, 0f, 0.15f)
+            : new Color(0f, 1f, 0f, 0.15f);
+        Gizmos.DrawSphere(RayPoint.position, kickRadius);
     }
 
+    void DisplayPlayerPosition()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, -transform.up, out hit, RayDistance))
+        {
+            Vector3 floorPosition = new Vector3(hit.point.x, hit.point.y + _floorOffset, hit.point.z );
+            playerPositionIndicator.position = floorPosition;
+            playerAimIndicator.position = floorPosition;
 
+        }
+    }
 
     void FixedUpdate()
     {
         Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.z);
 
-        // Decay any active knockback so it fades out rather than persisting forever
-        if (knockbackVelocity.sqrMagnitude > 0.01f)
-        {
-            knockbackVelocity = Vector3.Lerp(knockbackVelocity, Vector3.zero, knockbackDrag * Time.fixedDeltaTime);
-        }
-        else
-        {
-            knockbackVelocity = Vector3.zero;
-        }
 
-        // Move relative to world (NOT current rotation), blended with any knockback
-        rb.MovePosition(rb.position + (inputDir * speed + knockbackVelocity) * Time.fixedDeltaTime);
+        rb.MovePosition(rb.position + (inputDir * speed) * Time.fixedDeltaTime);
 
-        // Rotate ONLY when moving
         if (inputDir.sqrMagnitude > 0.001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(inputDir);
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRotation,
-                15f * Time.fixedDeltaTime
-            );
+            transform.rotation = targetRotation;
+            
         }
-
+        DisplayPlayerPosition();
     }
 
     bool IsGrounded()
