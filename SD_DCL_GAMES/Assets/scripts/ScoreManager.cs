@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
+using UnityEngine.InputSystem;
 
 public class ScoreManager : MonoBehaviour
 {
@@ -42,6 +43,11 @@ public class ScoreManager : MonoBehaviour
     private int player1Score;
     private int player2Score;
 
+    [SerializeField]
+    private GameObject Player1, Player2, Ball;
+    public PlayerInputManager _playerInputManager;
+    private bool CheckPlayerCount;
+
     private bool matchOver;
 
     public bool IsMatchOver => matchOver;
@@ -64,6 +70,26 @@ public class ScoreManager : MonoBehaviour
     private void Start()
     {
         UpdateScoreUI();
+
+    }
+
+    private void Update()
+    {
+        if (!CheckPlayerCount)
+        {
+            if (_playerInputManager.playerCount == 2)
+            {
+                AssignPlayers();
+            }
+        }
+    }
+
+    void AssignPlayers()
+    {
+        CheckPlayerCount = true;
+        Player1 = GameObject.FindGameObjectWithTag("Player1");
+        Player2 = GameObject.FindGameObjectWithTag("Player2");
+        Ball = GameObject.FindGameObjectWithTag("Ball");
     }
 
     public void OnBallEnteredGoal(string goalOwnerTag)
@@ -229,10 +255,22 @@ public class ScoreManager : MonoBehaviour
         if (player1Score > player2Score)
         {
             result = Player1Tag;
+            TargetGroupAutoRegister _cameraRegister = Player2.GetComponent<TargetGroupAutoRegister>();
+            TargetGroupAutoRegister _cameraRegisterBall = Ball.GetComponent<TargetGroupAutoRegister>();
+
+            _cameraRegister.RemovePlayer();
+            _cameraRegisterBall.RemovePlayer();
+
+
         }
         else if (player2Score > player1Score)
         {
             result = Player2Tag;
+            TargetGroupAutoRegister _cameraRegister = Player1.GetComponent<TargetGroupAutoRegister>();
+            TargetGroupAutoRegister _cameraRegisterBall = Ball.GetComponent<TargetGroupAutoRegister>();
+
+            _cameraRegister.RemovePlayer();
+            _cameraRegisterBall.RemovePlayer();
         }
         else
         {

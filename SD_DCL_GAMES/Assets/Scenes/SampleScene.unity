@@ -1702,6 +1702,10 @@ MonoBehaviour:
   onMatchWon:
     m_PersistentCalls:
       m_Calls: []
+  Player1: {fileID: 0}
+  Player2: {fileID: 0}
+  Ball: {fileID: 125264573}
+  _playerInputManager: {fileID: 315405147}
 --- !u!4 &804535167
 Transform:
   m_ObjectHideFlags: 0
