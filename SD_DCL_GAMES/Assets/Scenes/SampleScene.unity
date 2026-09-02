@@ -1362,7 +1362,7 @@ MonoBehaviour:
   winText: {fileID: 2144133156}
   player1WinMessage: Player 1 Wins!
   player2WinMessage: Player 2 Wins!
-  drawMessage: It's a Draw!
+  drawMessage: You Win
 --- !u!1001 &505845581
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1665,7 +1665,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreManager
   player1ScoreText: {fileID: 1129310547}
   player2ScoreText: {fileID: 1209142644}
-  pointsToWin: 5
   ballRigidbody: {fileID: 125264579}
   ballSpawnPoint: {fileID: 1006557597}
   respawnManager: {fileID: 1770193016}
@@ -1698,10 +1697,34 @@ MonoBehaviour:
         m_CallState: 2
   onPlayerScoredOn:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 804535166}
+        m_TargetAssemblyTypeName: ScoreManager, Assembly-CSharp
+        m_MethodName: OnBallEnteredGoal
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onMatchWon:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 804535166}
+        m_TargetAssemblyTypeName: ScoreManager, Assembly-CSharp
+        m_MethodName: set_name
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: You Win
+          m_BoolArgument: 0
+        m_CallState: 2
   Player1: {fileID: 0}
   Player2: {fileID: 0}
   Ball: {fileID: 125264573}
@@ -1867,11 +1890,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21b5b81301db90a4d99b5ba508390324, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameTimer
-  matchDuration: 180
+  matchDuration: 10
   timerText: {fileID: 2058140729}
   onTimerEnded:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 468534987}
+        m_TargetAssemblyTypeName: WinPanelUI, Assembly-CSharp
+        m_MethodName: ShowWinPanel
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!4 &848872484
 Transform:
   m_ObjectHideFlags: 0

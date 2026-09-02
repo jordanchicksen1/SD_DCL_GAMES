@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
@@ -5,24 +6,31 @@ using TMPro;
 public class GameTimer : MonoBehaviour
 {
     [Header("Timer Settings")]
-    [Tooltip("Match length in seconds. Default is 3 minutes (180s).")]
-    [SerializeField] private float matchDuration = 180f;
+    [Tooltip("Match length in seconds. Default is 3 minutes.")]
+    [SerializeField]
+    private float matchDuration = 180f;
 
-    [Header("UI (optional)")]
-    [SerializeField] private TMP_Text timerText;
+    [Header("UI")]
+    [SerializeField]
+    private TMP_Text timerText;
 
-    [Header("Events (optional)")]
-    [Tooltip("Fired once, the instant the timer reaches 0.")]
+    [Header("Events")]
+    [Tooltip("Fired once when the timer reaches 0.")]
     public UnityEvent onTimerEnded;
 
     private float timeRemaining;
+
     private bool isRunning;
+
     private int lastLoggedSecond = -1;
 
     private void Start()
     {
-        timeRemaining = matchDuration;
+        timeRemaining =
+            matchDuration;
+
         isRunning = true;
+
         UpdateTimerDisplay();
     }
 
@@ -31,21 +39,19 @@ public class GameTimer : MonoBehaviour
         if (!isRunning)
             return;
 
-        if (ScoreManager.Instance != null && ScoreManager.Instance.IsMatchOver)
-        {
-            isRunning = false;
-            Debug.Log("[GameTimer] Match already ended (by points) - stopping timer.");
-            return;
-        }
-
-        timeRemaining -= Time.deltaTime;
+        timeRemaining -=
+            Time.deltaTime;
 
         if (timeRemaining <= 0f)
         {
             timeRemaining = 0f;
+
             isRunning = false;
+
             UpdateTimerDisplay();
+
             HandleTimerEnded();
+
             return;
         }
 
@@ -54,47 +60,103 @@ public class GameTimer : MonoBehaviour
 
     private void HandleTimerEnded()
     {
-        Debug.Log("[GameTimer] Time's up!");
+        Debug.Log(
+            "[GameTimer] TIME'S UP!"
+        );
+
+        // Fire the Unity Event first.
         onTimerEnded?.Invoke();
 
+        // Tell ScoreManager to determine
+        // who won based on the final score.
         if (ScoreManager.Instance != null)
-            ScoreManager.Instance.EndMatchByTimeout();
+        {
+            ScoreManager.Instance
+                .EndMatchByTimeout();
+        }
         else
-            Debug.LogWarning("[GameTimer] No ScoreManager found in the scene - can't determine a winner.");
+        {
+            Debug.LogWarning(
+                "[GameTimer] No ScoreManager found. " +
+                "Cannot determine winner."
+            );
+        }
     }
 
-    public void PauseTimer() => isRunning = false;
+    public void PauseTimer()
+    {
+        isRunning = false;
+
+        Debug.Log(
+            "[GameTimer] Timer paused."
+        );
+    }
 
     public void ResumeTimer()
     {
-        if (ScoreManager.Instance != null && ScoreManager.Instance.IsMatchOver)
+        if (timeRemaining <= 0f)
             return;
 
         isRunning = true;
+
+        Debug.Log(
+            "[GameTimer] Timer resumed."
+        );
     }
 
     public void ResetTimer()
     {
-        timeRemaining = matchDuration;
+        timeRemaining =
+            matchDuration;
+
         isRunning = true;
+
         lastLoggedSecond = -1;
+
         UpdateTimerDisplay();
+
+        Debug.Log(
+            "[GameTimer] Timer reset."
+        );
     }
 
     private void UpdateTimerDisplay()
     {
-        int minutes = Mathf.FloorToInt(timeRemaining / 60f);
-        int seconds = Mathf.FloorToInt(timeRemaining % 60f);
-        string formatted = $"{minutes:00}:{seconds:00}";
+        int minutes =
+            Mathf.FloorToInt(
+                timeRemaining / 60f
+            );
+
+        int seconds =
+            Mathf.FloorToInt(
+                timeRemaining % 60f
+            );
+
+        string formatted =
+            $"{minutes:00}:{seconds:00}";
 
         if (timerText != null)
-            timerText.text = formatted;
-
-        int wholeSecond = Mathf.CeilToInt(timeRemaining);
-        if (wholeSecond != lastLoggedSecond)
         {
-            lastLoggedSecond = wholeSecond;
-            Debug.Log($"[GameTimer] Time remaining: {formatted}");
+            timerText.text =
+                formatted;
+        }
+
+        int wholeSecond =
+            Mathf.CeilToInt(
+                timeRemaining
+            );
+
+        if (wholeSecond !=
+            lastLoggedSecond)
+        {
+            lastLoggedSecond =
+                wholeSecond;
+
+            Debug.Log(
+                "[GameTimer] Time remaining: " +
+                formatted
+            );
         }
     }
 }
+
