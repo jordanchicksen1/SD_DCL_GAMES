@@ -10,31 +10,38 @@ public class ScoreManager : MonoBehaviour
     public const string Player2Tag = "Player2";
 
     [Header("UI")]
-    [SerializeField] private TMP_Text player1ScoreText;
-    [SerializeField] private TMP_Text player2ScoreText;
+    [SerializeField]
+    private TMP_Text player1ScoreText;
+
+    [SerializeField]
+    private TMP_Text player2ScoreText;
 
     [Header("Match Settings")]
+    [SerializeField]
+    private int pointsToWin = 5;
 
-    [SerializeField] private int pointsToWin = 5;
+    [Header("Ball Reset")]
+    [SerializeField]
+    private Rigidbody ballRigidbody;
 
-    [Header("Ball Reset (optional)")]
-    [Tooltip("The ball's Rigidbody. Leave empty to skip auto-resetting the ball after a goal.")]
-    [SerializeField] private Rigidbody ballRigidbody;
-    [Tooltip("Where the ball snaps back to after a goal (usually the center spot/kickoff position).")]
-    [SerializeField] private Transform ballSpawnPoint;
+    [SerializeField]
+    private Transform ballSpawnPoint;
 
-    [Header("Player Respawn (optional)")]
-    [Tooltip("If assigned, both players are snapped back to their spawn points every time a goal is scored.")]
-    [SerializeField] private RespawnManager respawnManager;
+    [Header("Player Respawn")]
+    [SerializeField]
+    private RespawnManager respawnManager;
 
-    [Header("Events (optional)")]
-    [Tooltip("Fired every time a goal is scored. Passes the scoring player's tag (\"Player1\"/\"Player2\").")]
+    [Header("Events")]
+
     public UnityEvent<string> onGoalScored;
-    [Tooltip("Fired once a player reaches Points To Win. Passes the winning player's tag.")]
+
+    public UnityEvent<string> onPlayerScoredOn;
+
     public UnityEvent<string> onMatchWon;
 
     private int player1Score;
     private int player2Score;
+
     private bool matchOver;
 
     public bool IsMatchOver => matchOver;
@@ -43,10 +50,14 @@ public class ScoreManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("Duplicate ScoreManager found - destroying the extra one.");
+            Debug.LogWarning(
+                "[ScoreManager] Duplicate ScoreManager found. Destroying duplicate."
+            );
+
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
     }
 
@@ -57,16 +68,79 @@ public class ScoreManager : MonoBehaviour
 
     public void OnBallEnteredGoal(string goalOwnerTag)
     {
-        Debug.Log($"[ScoreManager] Ball entered {goalOwnerTag}'s goal.");
+        Debug.Log(
+            $"[ScoreManager] Ball entered {goalOwnerTag}'s goal."
+        );
 
         if (matchOver)
         {
-            Debug.Log("[ScoreManager] Match is already over - ignoring goal.");
+            Debug.Log(
+                "[ScoreManager] Match is already over - ignoring goal."
+            );
+
             return;
         }
 
-        string scoringPlayerTag = goalOwnerTag == Player1Tag ? Player2Tag : Player1Tag;
+        string scoringPlayerTag;
+
+        if (goalOwnerTag == Player1Tag)
+        {
+            scoringPlayerTag = Player2Tag;
+        }
+        else if (goalOwnerTag == Player2Tag)
+        {
+            scoringPlayerTag = Player1Tag;
+        }
+        else
+        {
+            Debug.LogWarning(
+                $"[ScoreManager] Invalid goal owner tag: {goalOwnerTag}. " +
+                "Expected Player1 or Player2."
+            );
+
+            return;
+        }
+
+        PlayExplosionOnPlayer(goalOwnerTag);
+
+        onPlayerScoredOn?.Invoke(goalOwnerTag);
+
         AddPoint(scoringPlayerTag);
+    }
+
+    private void PlayExplosionOnPlayer(string playerTag)
+    {
+        GameObject player =
+            GameObject.FindGameObjectWithTag(playerTag);
+
+        if (player == null)
+        {
+            Debug.LogWarning(
+                $"[ScoreManager] Could not find player with tag '{playerTag}'. " +
+                "Make sure the player has spawned and has the correct tag."
+            );
+
+            return;
+        }
+
+        AnimationManager animationManager =
+            player.GetComponent<AnimationManager>();
+
+        if (animationManager == null)
+        {
+            Debug.LogWarning(
+                $"[ScoreManager] Player '{playerTag}' does not have " +
+                "an AnimationManager component."
+            );
+
+            return;
+        }
+
+        animationManager.PlayExplotion();
+
+        Debug.Log(
+            $"[ScoreManager] Explosion animation triggered on {playerTag}."
+        );
     }
 
     public void AddPoint(string scoringPlayerTag)
@@ -75,32 +149,73 @@ public class ScoreManager : MonoBehaviour
             return;
 
         if (scoringPlayerTag == Player1Tag)
+        {
             player1Score++;
+        }
         else if (scoringPlayerTag == Player2Tag)
+        {
             player2Score++;
+        }
         else
         {
-            Debug.LogWarning($"AddPoint: unrecognized player tag \"{scoringPlayerTag}\" - expected \"Player1\" or \"Player2\".");
+            Debug.LogWarning(
+                $"[ScoreManager] Unrecognized player tag " +
+                $"'{scoringPlayerTag}'. Expected Player1 or Player2."
+            );
+
             return;
         }
 
         UpdateScoreUI();
-        Debug.Log($"[ScoreManager] Point awarded to {scoringPlayerTag}.");
+
+
+        Debug.Log(
+            $"[ScoreManager] Point awarded to {scoringPlayerTag}."
+        );
+
+        Debug.Log(
+            $"[ScoreManager] Score: " +
+            $"Player 1 = {player1Score} | " +
+            $"Player 2 = {player2Score}"
+        );
+
         onGoalScored?.Invoke(scoringPlayerTag);
 
-        if (pointsToWin > 0 && GetScore(scoringPlayerTag) >= pointsToWin)
+        if (
+            pointsToWin > 0 &&
+            GetScore(scoringPlayerTag) >= pointsToWin
+        )
         {
             matchOver = true;
-            Debug.Log($"[ScoreManager] {scoringPlayerTag} wins the match!");
+
+            Debug.Log(
+                $"[ScoreManager] {scoringPlayerTag} wins the match!"
+            );
+
             onMatchWon?.Invoke(scoringPlayerTag);
+
             return;
         }
 
         ResetBallImmediate();
+
         RespawnPlayersIfAssigned();
     }
 
-    public int GetScore(string playerTag) => playerTag == Player1Tag ? player1Score : player2Score;
+    public int GetScore(string playerTag)
+    {
+        if (playerTag == Player1Tag)
+        {
+            return player1Score;
+        }
+
+        if (playerTag == Player2Tag)
+        {
+            return player2Score;
+        }
+
+        return 0;
+    }
 
     public void EndMatchByTimeout()
     {
@@ -109,11 +224,29 @@ public class ScoreManager : MonoBehaviour
 
         matchOver = true;
 
-        string result = player1Score > player2Score ? Player1Tag
-                       : player2Score > player1Score ? Player2Tag
-                       : "Draw";
+        string result;
 
-        Debug.Log($"[ScoreManager] Time's up! Final score Player1: {player1Score}  |  Player2: {player2Score}  ->  {result}");
+        if (player1Score > player2Score)
+        {
+            result = Player1Tag;
+        }
+        else if (player2Score > player1Score)
+        {
+            result = Player2Tag;
+        }
+        else
+        {
+            result = "Draw";
+        }
+
+
+        Debug.Log(
+            $"[ScoreManager] Time's up! " +
+            $"Player 1: {player1Score} | " +
+            $"Player 2: {player2Score} | " +
+            $"Result: {result}"
+        );
+
         onMatchWon?.Invoke(result);
     }
 
@@ -121,17 +254,29 @@ public class ScoreManager : MonoBehaviour
     {
         player1Score = 0;
         player2Score = 0;
+
         matchOver = false;
+
         UpdateScoreUI();
+
         ResetBallImmediate();
+
         RespawnPlayersIfAssigned();
+
+        Debug.Log(
+            "[ScoreManager] Match reset."
+        );
     }
 
     private void RespawnPlayersIfAssigned()
     {
         if (respawnManager == null)
         {
-            Debug.LogWarning("[ScoreManager] Respawn Manager is not assigned - skipping player respawn. Drag a RespawnManager into the ScoreManager Inspector.");
+            Debug.LogWarning(
+                "[ScoreManager] Respawn Manager is not assigned. " +
+                "Drag your RespawnManager into the ScoreManager Inspector."
+            );
+
             return;
         }
 
@@ -142,37 +287,73 @@ public class ScoreManager : MonoBehaviour
     {
         if (ballRigidbody == null)
         {
-            Debug.LogWarning("[ScoreManager] Ball Rigidbody is not assigned - skipping ball reset. Drag the ball's Rigidbody into the ScoreManager Inspector.");
+            Debug.LogWarning(
+                "[ScoreManager] Ball Rigidbody is not assigned. " +
+                "Drag the ball Rigidbody into the Inspector."
+            );
+
             return;
         }
 
-        if (ballSpawnPoint == null)
-        {
-            Debug.LogWarning("[ScoreManager] Ball Spawn Point is not assigned - resetting velocity only, position won't change. Drag a spawn Transform into the ScoreManager Inspector.");
-        }
 
         ballRigidbody.linearVelocity = Vector3.zero;
+
         ballRigidbody.angularVelocity = Vector3.zero;
 
         if (ballSpawnPoint != null)
         {
-            ballRigidbody.transform.SetPositionAndRotation(ballSpawnPoint.position, ballSpawnPoint.rotation);
-            Debug.Log($"[ScoreManager] Ball reset to spawn point at {ballSpawnPoint.position}.");
+            ballRigidbody.transform.SetPositionAndRotation(
+                ballSpawnPoint.position,
+                ballSpawnPoint.rotation
+            );
+
+            Debug.Log(
+                $"[ScoreManager] Ball reset to " +
+                $"{ballSpawnPoint.position}."
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[ScoreManager] Ball Spawn Point is not assigned. " +
+                "Ball velocity was reset, but its position was not changed."
+            );
         }
     }
 
+
     private void UpdateScoreUI()
     {
-        Debug.Log($"[ScoreManager] Score is now Player1: {player1Score}  |  Player2: {player2Score}");
+        Debug.Log(
+            $"[ScoreManager] Score is now " +
+            $"Player 1: {player1Score} | " +
+            $"Player 2: {player2Score}"
+        );
+
 
         if (player1ScoreText != null)
-            player1ScoreText.text = player1Score.ToString();
+        {
+            player1ScoreText.text =
+                player1Score.ToString();
+        }
         else
-            Debug.LogWarning("[ScoreManager] Player 1 Score Text is not assigned - score is only visible in the Console for now.");
+        {
+            Debug.LogWarning(
+                "[ScoreManager] Player 1 Score Text is not assigned."
+            );
+        }
+
 
         if (player2ScoreText != null)
-            player2ScoreText.text = player2Score.ToString();
+        {
+            player2ScoreText.text =
+                player2Score.ToString();
+        }
         else
-            Debug.LogWarning("[ScoreManager] Player 2 Score Text is not assigned - score is only visible in the Console for now.");
+        {
+            Debug.LogWarning(
+                "[ScoreManager] Player 2 Score Text is not assigned."
+            );
+        }
     }
 }

@@ -4,18 +4,30 @@ using UnityEngine;
 
 public class AnimationManager : MonoBehaviour
 {
+    [Header("Animation Settings")]
     [SerializeField]
     private List<string> _boolNames;
+
     [SerializeField]
     private Animator _animator;
 
-    private void Start()
+    private Coroutine explosionCoroutine;
+
+    public bool IsExploding { get; private set; }
+
+    private void Awake()
     {
-        _animator = GetComponent<Animator>();
+        if (_animator == null)
+        {
+            _animator = GetComponent<Animator>();
+        }
     }
 
     private void SetAllFalseExcept(int index)
     {
+        if (_animator == null)
+            return;
+
         for (int i = 0; i < _boolNames.Count; i++)
         {
             _animator.SetBool(_boolNames[i], i == index);
@@ -24,33 +36,58 @@ public class AnimationManager : MonoBehaviour
 
     public void PlayIdle()
     {
+        if (IsExploding)
+            return;
+
         SetAllFalseExcept(0);
     }
 
     public void PlayRun()
     {
+        if (IsExploding)
+            return;
+
         SetAllFalseExcept(1);
     }
 
     public void PlaySprint()
     {
+        if (IsExploding)
+            return;
+
         SetAllFalseExcept(2);
     }
 
     public void PlayShoot()
     {
+        if (IsExploding)
+            return;
+
         SetAllFalseExcept(3);
     }
 
     public void PlayExplotion()
     {
-        StartCoroutine(Explotion());
+        if (explosionCoroutine != null)
+        {
+            StopCoroutine(explosionCoroutine);
+        }
+
+        explosionCoroutine = StartCoroutine(Explotion());
     }
 
-    IEnumerator Explotion()
+    private IEnumerator Explotion()
     {
+        IsExploding = true;
+
         SetAllFalseExcept(4);
-        yield return new WaitForSeconds(2);
+
+        yield return new WaitForSeconds(2f);
+
+        IsExploding = false;
+
         PlayIdle();
+
+        explosionCoroutine = null;
     }
 }
