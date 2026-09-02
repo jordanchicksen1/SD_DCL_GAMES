@@ -3,7 +3,8 @@ using UnityEngine.Events;
 using TMPro;
 
 public class ScoreManager : MonoBehaviour
-{    public static ScoreManager Instance { get; private set; }
+{
+    public static ScoreManager Instance { get; private set; }
 
     public const string Player1Tag = "Player1";
     public const string Player2Tag = "Player2";
@@ -13,19 +14,30 @@ public class ScoreManager : MonoBehaviour
     [SerializeField] private TMP_Text player2ScoreText;
 
     [Header("Match Settings")]
+
     [SerializeField] private int pointsToWin = 5;
 
     [Header("Ball Reset (optional)")]
+    [Tooltip("The ball's Rigidbody. Leave empty to skip auto-resetting the ball after a goal.")]
     [SerializeField] private Rigidbody ballRigidbody;
+    [Tooltip("Where the ball snaps back to after a goal (usually the center spot/kickoff position).")]
     [SerializeField] private Transform ballSpawnPoint;
 
+    [Header("Player Respawn (optional)")]
+    [Tooltip("If assigned, both players are snapped back to their spawn points every time a goal is scored.")]
+    [SerializeField] private RespawnManager respawnManager;
+
     [Header("Events (optional)")]
+    [Tooltip("Fired every time a goal is scored. Passes the scoring player's tag (\"Player1\"/\"Player2\").")]
     public UnityEvent<string> onGoalScored;
+    [Tooltip("Fired once a player reaches Points To Win. Passes the winning player's tag.")]
     public UnityEvent<string> onMatchWon;
 
     private int player1Score;
     private int player2Score;
     private bool matchOver;
+
+    public bool IsMatchOver => matchOver;
 
     private void Awake()
     {
@@ -81,13 +93,29 @@ public class ScoreManager : MonoBehaviour
             matchOver = true;
             Debug.Log($"[ScoreManager] {scoringPlayerTag} wins the match!");
             onMatchWon?.Invoke(scoringPlayerTag);
-            return; 
+            return;
         }
 
         ResetBallImmediate();
+        RespawnPlayersIfAssigned();
     }
 
     public int GetScore(string playerTag) => playerTag == Player1Tag ? player1Score : player2Score;
+
+    public void EndMatchByTimeout()
+    {
+        if (matchOver)
+            return;
+
+        matchOver = true;
+
+        string result = player1Score > player2Score ? Player1Tag
+                       : player2Score > player1Score ? Player2Tag
+                       : "Draw";
+
+        Debug.Log($"[ScoreManager] Time's up! Final score Player1: {player1Score}  |  Player2: {player2Score}  ->  {result}");
+        onMatchWon?.Invoke(result);
+    }
 
     public void ResetMatch()
     {
@@ -96,6 +124,18 @@ public class ScoreManager : MonoBehaviour
         matchOver = false;
         UpdateScoreUI();
         ResetBallImmediate();
+        RespawnPlayersIfAssigned();
+    }
+
+    private void RespawnPlayersIfAssigned()
+    {
+        if (respawnManager == null)
+        {
+            Debug.LogWarning("[ScoreManager] Respawn Manager is not assigned - skipping player respawn. Drag a RespawnManager into the ScoreManager Inspector.");
+            return;
+        }
+
+        respawnManager.RespawnPlayers();
     }
 
     private void ResetBallImmediate()
