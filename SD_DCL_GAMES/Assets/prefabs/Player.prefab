@@ -589,6 +589,7 @@ MonoBehaviour:
   - Run
   - Sprint
   - Shoot
+  - Explotion
   _animator: {fileID: 9063106087316249785}
 --- !u!95 &9063106087316249785 stripped
 Animator:
