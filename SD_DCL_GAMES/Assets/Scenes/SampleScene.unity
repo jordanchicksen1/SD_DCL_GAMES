@@ -624,6 +624,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9a7771c10284204e8884c480d99a75c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WallScripts
+--- !u!1 &243249138
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 243249139}
+  m_Layer: 0
+  m_Name: Point 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &243249139
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243249138}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -31.1, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1770193015}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &315405146
 GameObject:
   m_ObjectHideFlags: 0
@@ -699,6 +730,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &376988178
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 376988179}
+  m_Layer: 0
+  m_Name: Point 2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &376988179
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 376988178}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 40.1, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1770193015}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &396750143
 GameObject:
@@ -1742,6 +1804,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -4683669308469848369, guid: f48958c8f19136e4eb72581a6634d6cf, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 60c9f05d9be9e9f4590fc7d959dbf1e0, type: 2}
+    - target: {fileID: -3195828791156449804, guid: f48958c8f19136e4eb72581a6634d6cf, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 60c9f05d9be9e9f4590fc7d959dbf1e0, type: 2}
     - target: {fileID: -3111082180692322035, guid: f48958c8f19136e4eb72581a6634d6cf, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -1798,6 +1868,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SoccerLevel
       objectReference: {fileID: 0}
+    - target: {fileID: 2355982399387309400, guid: f48958c8f19136e4eb72581a6634d6cf, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 60c9f05d9be9e9f4590fc7d959dbf1e0, type: 2}
     - target: {fileID: 4306643203051859313, guid: f48958c8f19136e4eb72581a6634d6cf, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.1
@@ -1810,6 +1884,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 24.56
       objectReference: {fileID: 0}
+    - target: {fileID: 4321514657177891973, guid: f48958c8f19136e4eb72581a6634d6cf, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 60c9f05d9be9e9f4590fc7d959dbf1e0, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 65702495048144492, guid: f48958c8f19136e4eb72581a6634d6cf, type: 3}
@@ -2648,6 +2726,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1770193015}
+  - component: {fileID: 1770193016}
   m_Layer: 0
   m_Name: Respawn Manager
   m_TagString: Untagged
@@ -2667,9 +2746,27 @@ Transform:
   m_LocalPosition: {x: -7.43158, y: 0.85, z: 1.31544}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 243249139}
+  - {fileID: 376988179}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1770193016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1770193014}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04b8882fbdd44524aa872e2bdd17ea42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RespawnManager
+  Players: []
+  SpawnPoints:
+  - {fileID: 243249139}
+  - {fileID: 376988179}
 --- !u!1 &1781281326
 GameObject:
   m_ObjectHideFlags: 0

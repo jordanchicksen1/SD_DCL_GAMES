@@ -1,7 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using static UnityEngine.UI.Image;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController3D : MonoBehaviour
@@ -36,6 +42,8 @@ public class PlayerController3D : MonoBehaviour
 
     private bool _isRunning;
 
+    private RespawnManager _spawnManager;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -49,6 +57,9 @@ public class PlayerController3D : MonoBehaviour
         playerInput.defaultActionMap = "UI";
         Cursor.lockState = CursorLockMode.None;
         playerInput = GetComponent<PlayerInput>();
+        _spawnManager = FindFirstObjectByType<RespawnManager>();
+
+        _spawnManager.AddPlayer(transform);
     }
 
     public void OnMove(InputAction.CallbackContext context)
@@ -99,10 +110,11 @@ public class PlayerController3D : MonoBehaviour
                 ballRb.linearVelocity = Vector3.zero;
                 ballRb.AddForce(finalDirection * _kickForce, ForceMode.Impulse);
 
-                if (animationManager != null)
-                    animationManager.PlayShoot();
+               
             }
         }
+        if (animationManager != null)
+            animationManager.PlayShoot();
     }
 
     private void OnDrawGizmosSelected()

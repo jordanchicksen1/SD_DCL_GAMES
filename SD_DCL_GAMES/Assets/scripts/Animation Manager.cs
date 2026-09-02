@@ -5,6 +5,7 @@ public class AnimationManager : MonoBehaviour
 {
     [SerializeField]
     private List<string> _boolNames;
+    [SerializeField]
     private Animator _animator;
 
     private void Start()
