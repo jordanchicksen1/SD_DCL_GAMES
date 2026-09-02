@@ -10,12 +10,17 @@ public class GoalPost : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"[GoalPost] {name} trigger hit by \"{other.name}\" (tag: {other.tag}).");
+
         if (!other.CompareTag("Ball"))
+        {
+            Debug.Log($"[GoalPost] {name} ignored \"{other.name}\" - not tagged \"Ball\".");
             return;
+        }
 
         if (ScoreManager.Instance == null)
         {
-            Debug.LogWarning($"GoalPost ({name}): ball entered but no ScoreManager was found in the scene.");
+            Debug.LogWarning($"[GoalPost] ({name}): ball entered but no ScoreManager was found in the scene.");
             return;
         }
 
@@ -26,7 +31,7 @@ public class GoalPost : MonoBehaviour
             ownerTag = ScoreManager.Player2Tag;
         else
         {
-            Debug.LogWarning($"GoalPost ({name}): tag it \"P1Goal\" or \"P2Goal\" so it knows which player defends it.");
+            Debug.LogWarning($"[GoalPost] ({name}): tag it \"P1Goal\" or \"P2Goal\" so it knows which player defends it.");
             return;
         }
 
