@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 1384590850506112443}
   - component: {fileID: 9006802705691039895}
   - component: {fileID: 1284025710336958704}
+  - component: {fileID: 6151669218378163328}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -401,6 +402,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2bad27d6ad05ac4ea00ddf08b13f937, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TargetGroupAutoRegister
+--- !u!114 &6151669218378163328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2640788942037532697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0f59102245bbb24d9e93fe9a938d966, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerColour
+  playerMesh: {fileID: 8482675909556943712}
+  player1Material: {fileID: 2100000, guid: 20865b88c02cfcf4a92ffdc0e7c0993e, type: 2}
+  player2Material: {fileID: 2100000, guid: 00fd37c022ca4ed4b8d7e3a6e88847f2, type: 2}
 --- !u!1 &3739744481266202851
 GameObject:
   m_ObjectHideFlags: 0
@@ -591,6 +607,11 @@ MonoBehaviour:
   - Shoot
   - Explode
   _animator: {fileID: 9063106087316249785}
+--- !u!23 &8482675909556943712 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 3863384833208060046, guid: 52a166ffc9d815840bf9b30e9317812b, type: 3}
+  m_PrefabInstance: {fileID: 4622105826119136238}
+  m_PrefabAsset: {fileID: 0}
 --- !u!95 &9063106087316249785 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 4459577609930567511, guid: 52a166ffc9d815840bf9b30e9317812b, type: 3}

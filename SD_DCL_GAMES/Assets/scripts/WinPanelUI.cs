@@ -14,35 +14,76 @@ public class WinPanelUI : MonoBehaviour
 
     private void Start()
     {
+        // Hide the panel when the match starts.
         if (winPanel != null)
             winPanel.SetActive(false);
+
+        // Listen for the match ending.
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.onMatchWon.AddListener(ShowWinPanel);
+        }
+        else
+        {
+            Debug.LogError("[WinPanelUI] ScoreManager.Instance was not found.");
+        }
     }
 
     public void ShowWinPanel(string result)
     {
-        string message = result switch
-        {
-            ScoreManager.Player1Tag => player1WinMessage,
-            ScoreManager.Player2Tag => player2WinMessage,
-            _ => drawMessage
-        };
+        Debug.Log($"[WinPanelUI] RECEIVED RESULT: '{result}'");
 
-        Debug.Log($"[WinPanelUI] Match ended - {message}");
+        string message;
+
+        if (result == ScoreManager.Player1Tag)
+        {
+            message = player1WinMessage;
+        }
+        else if (result == ScoreManager.Player2Tag)
+        {
+            message = player2WinMessage;
+        }
+        else if (result == "Draw")
+        {
+            message = drawMessage;
+        }
+        else
+        {
+            message = $"UNKNOWN RESULT: {result}";
+        }
+
+        Debug.Log($"[WinPanelUI] FINAL MESSAGE: {message}");
 
         if (winText != null)
+        {
             winText.text = message;
+        }
         else
-            Debug.LogWarning("[WinPanelUI] Win Text is not assigned - message only visible in Console.");
+        {
+            Debug.LogWarning("[WinPanelUI] Win Text is not assigned.");
+        }
 
         if (winPanel != null)
+        {
             winPanel.SetActive(true);
+        }
         else
-            Debug.LogWarning("[WinPanelUI] Win Panel is not assigned - nothing to show.");
+        {
+            Debug.LogWarning("[WinPanelUI] Win Panel is not assigned.");
+        }
     }
 
     public void HideWinPanel()
     {
         if (winPanel != null)
             winPanel.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.onMatchWon.RemoveListener(ShowWinPanel);
+        }
     }
 }

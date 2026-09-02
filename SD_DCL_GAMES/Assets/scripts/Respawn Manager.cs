@@ -53,6 +53,12 @@ public class RespawnManager : MonoBehaviour
         {
             SetPlayerTag(player, "Player1");
 
+            PlayerColour playerColour =
+                player.GetComponent<PlayerColour>();
+
+            if (playerColour != null)
+                playerColour.SetPlayerColour("Player1");
+
             MovePlayerToSpawn(
                 player,
                 player1SpawnPoint
@@ -67,6 +73,12 @@ public class RespawnManager : MonoBehaviour
         else if (players.Count == 1)
         {
             SetPlayerTag(player, "Player2");
+
+            PlayerColour playerColour =
+                player.GetComponent<PlayerColour>();
+
+            if (playerColour != null)
+                playerColour.SetPlayerColour("Player2");
 
             MovePlayerToSpawn(
                 player,
