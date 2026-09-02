@@ -1,13 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.UI;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using static UnityEngine.UI.Image;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController3D : MonoBehaviour
@@ -37,6 +31,11 @@ public class PlayerController3D : MonoBehaviour
     [SerializeField]
     private float kickRadius = 0.5f;
 
+    [Header("Animation")]
+    public AnimationManager animationManager;
+
+    private bool _isRunning;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -52,20 +51,16 @@ public class PlayerController3D : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
     }
 
-
-    // MOVEMENT
     public void OnMove(InputAction.CallbackContext context)
     {
         Vector2 input = context.ReadValue<Vector2>();
         moveInput = new Vector3(input.x, 0f, input.y);
     }
 
-
     public void OnLook(InputAction.CallbackContext context)
     {
         lookInput = context.ReadValue<Vector2>();
     }
-
 
     public void OnJump(InputAction.CallbackContext context)
     {
@@ -80,10 +75,12 @@ public class PlayerController3D : MonoBehaviour
         if (context.performed)
         {
             speed = speed * SpeedMultiplier;
+            _isRunning = true;
         }
         else if (context.canceled)
         {
             speed = speed / SpeedMultiplier;
+            _isRunning = false;
         }
     }
 
@@ -93,14 +90,17 @@ public class PlayerController3D : MonoBehaviour
 
         if (hits.Length > 0)
         {
-            Rigidbody rb = hits[0].attachedRigidbody;
-            if (rb != null)
+            Rigidbody ballRb = hits[0].attachedRigidbody;
+            if (ballRb != null)
             {
                 Quaternion tiltRotation = Quaternion.AngleAxis(-upAngle, transform.right);
                 Vector3 finalDirection = tiltRotation * RayPoint.forward;
 
-                rb.linearVelocity = Vector3.zero;
-                rb.AddForce(finalDirection * _kickForce, ForceMode.Impulse);
+                ballRb.linearVelocity = Vector3.zero;
+                ballRb.AddForce(finalDirection * _kickForce, ForceMode.Impulse);
+
+                if (animationManager != null)
+                    animationManager.PlayShoot();
             }
         }
     }
@@ -109,13 +109,11 @@ public class PlayerController3D : MonoBehaviour
     {
         if (RayPoint == null) return;
 
-        // Check overlap live in editor so the gizmo color reflects whether it'd currently hit
         bool wouldHit = Physics.CheckSphere(RayPoint.position, kickRadius, FootBallLayer);
 
         Gizmos.color = wouldHit ? Color.red : Color.green;
         Gizmos.DrawWireSphere(RayPoint.position, kickRadius);
 
-        // Filled version at low alpha so it's easier to see the volume, not just the outline
         Gizmos.color = wouldHit
             ? new Color(1f, 0f, 0f, 0.15f)
             : new Color(0f, 1f, 0f, 0.15f);
@@ -127,10 +125,9 @@ public class PlayerController3D : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(transform.position, -transform.up, out hit, RayDistance))
         {
-            Vector3 floorPosition = new Vector3(hit.point.x, hit.point.y + _floorOffset, hit.point.z );
+            Vector3 floorPosition = new Vector3(hit.point.x, hit.point.y + _floorOffset, hit.point.z);
             playerPositionIndicator.position = floorPosition;
             playerAimIndicator.position = floorPosition;
-
         }
     }
 
@@ -138,16 +135,30 @@ public class PlayerController3D : MonoBehaviour
     {
         Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.z);
 
-
         rb.MovePosition(rb.position + (inputDir * speed) * Time.fixedDeltaTime);
 
         if (inputDir.sqrMagnitude > 0.001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(inputDir);
             transform.rotation = targetRotation;
-            
         }
+
+        UpdateAnimationState(inputDir);
         DisplayPlayerPosition();
+    }
+
+    private void UpdateAnimationState(Vector3 inputDir)
+    {
+        if (animationManager == null) return;
+
+        bool isMoving = inputDir.sqrMagnitude > 0.001f;
+
+        if (!isMoving)
+            animationManager.PlayIdle();
+        else if (_isRunning)
+            animationManager.PlaySprint();
+        else
+            animationManager.PlayRun();
     }
 
     bool IsGrounded()
