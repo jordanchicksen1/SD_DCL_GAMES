@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class RespawnManager : MonoBehaviour
 {
@@ -19,6 +20,12 @@ public class RespawnManager : MonoBehaviour
     [Tooltip("Time to wait before respawning players.")]
     [SerializeField]
     private float respawnDelay = 0f;
+
+    [Header("Match Start Countdown")]
+    [SerializeField] private TMP_Text countdownText;
+    [SerializeField] private float countdownTime = 1f;
+
+    private bool countdownStarted;
 
 
     private readonly List<Transform> players =
@@ -105,6 +112,11 @@ public class RespawnManager : MonoBehaviour
         // Add player to list.
         players.Add(player);
 
+        if (players.Count == 2 && !countdownStarted)
+        {
+            StartCoroutine(StartMatchCountdown());
+        }
+
 
         Debug.Log(
             "[RespawnManager] Registered: " +
@@ -112,6 +124,60 @@ public class RespawnManager : MonoBehaviour
             " | Tag: " +
             player.tag
         );
+    }
+
+    private System.Collections.IEnumerator StartMatchCountdown()
+    {
+        countdownStarted = true;
+
+        // Make sure both players cannot move.
+        SetPlayersCanMove(false);
+
+        // 3
+        countdownText.gameObject.SetActive(true);
+        countdownText.text = "3";
+
+        yield return new WaitForSeconds(countdownTime);
+
+        // 2
+        countdownText.text = "2";
+
+        yield return new WaitForSeconds(countdownTime);
+
+        // 1
+        countdownText.text = "1";
+
+        yield return new WaitForSeconds(countdownTime);
+
+        // START!
+        countdownText.text = "START!";
+
+        yield return new WaitForSeconds(0.75f);
+
+        // Let the players play.
+        SetPlayersCanMove(true);
+
+        // Hide countdown.
+        countdownText.gameObject.SetActive(false);
+    }
+
+    private void SetPlayersCanMove(bool canMove)
+    {
+        CleanupPlayerList();
+
+        foreach (Transform player in players)
+        {
+            if (player == null)
+                continue;
+
+            PlayerController3D controller =
+                player.GetComponent<PlayerController3D>();
+
+            if (controller != null)
+            {
+                controller.SetCanMove(canMove);
+            }
+        }
     }
 
 

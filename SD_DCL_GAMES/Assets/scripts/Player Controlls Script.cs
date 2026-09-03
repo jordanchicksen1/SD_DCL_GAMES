@@ -18,6 +18,14 @@ public class PlayerController3D : MonoBehaviour
     public float jumpForce = 5f;
     public float SpeedMultiplier = 2f;
 
+    [Header("Movement Dust")]
+    [SerializeField] private float dustInterval = 0.15f;
+    [SerializeField] private float dustMoveThreshold = 0.01f;
+    [SerializeField] private float dustSpawnBehindDistance = 0.5f;
+    [SerializeField] private float dustSpawnHeight = 0.05f;
+
+    private float nextDustTime;
+
     [Header("Football")]
     public LayerMask FootBallLayer;
 
@@ -50,7 +58,7 @@ public class PlayerController3D : MonoBehaviour
     private bool _isRunning;
 
     private RespawnManager _spawnManager;
-
+    private bool canMove = false;
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -87,6 +95,8 @@ public class PlayerController3D : MonoBehaviour
 
     public void OnMove(InputAction.CallbackContext context)
     {
+
+
         Vector2 input = context.ReadValue<Vector2>();
 
         moveInput = new Vector3(
@@ -103,6 +113,10 @@ public class PlayerController3D : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
+        if (!canMove)
+            return;
+
+
         if (context.performed && IsGrounded())
         {
             rb.linearVelocity = new Vector3(
@@ -115,6 +129,10 @@ public class PlayerController3D : MonoBehaviour
 
     public void OnRun(InputAction.CallbackContext context)
     {
+        if (!canMove)
+            return;
+
+
         if (context.performed)
         {
             speed *= SpeedMultiplier;
@@ -131,6 +149,10 @@ public class PlayerController3D : MonoBehaviour
     {
         if (!context.performed)
             return;
+
+        if (!canMove)
+            return;
+
 
         Collider[] hits = Physics.OverlapSphere(
             RayPoint.position,
@@ -171,6 +193,17 @@ public class PlayerController3D : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!canMove)
+        {
+            rb.linearVelocity = new Vector3(
+                0f,
+                rb.linearVelocity.y,
+                0f
+            );
+
+            return;
+        }
+
         Vector3 inputDir = new Vector3(
             moveInput.x,
             0f,
@@ -196,6 +229,8 @@ public class PlayerController3D : MonoBehaviour
             Time.fixedDeltaTime
         );
 
+        HandleMovementDust(inputDir);
+
         if (inputDir.sqrMagnitude > 0.001f)
         {
             Quaternion targetRotation =
@@ -209,7 +244,43 @@ public class PlayerController3D : MonoBehaviour
         DisplayPlayerPosition();
     }
 
+    private void HandleMovementDust(Vector3 inputDir)
+    {
+        if (DustPool.Instance == null)
+        {
+            Debug.LogWarning("PLAYER: DustPool.Instance is NULL!");
+            return;
+        }
 
+        if (!IsGrounded())
+        {
+            Debug.Log("PLAYER: Not grounded, no dust.");
+            nextDustTime = 0f;
+            return;
+        }
+
+        if (inputDir.sqrMagnitude <= dustMoveThreshold)
+        {
+            nextDustTime = 0f;
+            return;
+        }
+
+        if (Time.time >= nextDustTime)
+        {
+            Vector3 movementDirection = inputDir.normalized;
+
+            Vector3 spawnPosition =
+                transform.position
+                - movementDirection * dustSpawnBehindDistance
+                + Vector3.up * dustSpawnHeight;
+
+            Debug.Log("PLAYER: Spawning dust at " + spawnPosition);
+
+            DustPool.Instance.Spawn(spawnPosition);
+
+            nextDustTime = Time.time + dustInterval;
+        }
+    }
     private void UpdateAnimationState(Vector3 inputDir)
     {
         if (animationManager == null)
@@ -271,7 +342,7 @@ public class PlayerController3D : MonoBehaviour
         return Physics.Raycast(
             transform.position,
             Vector3.down,
-            1.1f
+            2.2f
         );
     }
 
@@ -306,5 +377,24 @@ public class PlayerController3D : MonoBehaviour
             RayPoint.position,
             kickRadius
         );
+    }
+
+    public void SetCanMove(bool value)
+    {
+        canMove = value;
+
+        if (!canMove)
+        {
+            // Clear any input that was being held.
+            moveInput = Vector3.zero;
+            lookInput = Vector2.zero;
+
+            // Stop horizontal movement.
+            rb.linearVelocity = new Vector3(
+                0f,
+                rb.linearVelocity.y,
+                0f
+            );
+        }
     }
 }

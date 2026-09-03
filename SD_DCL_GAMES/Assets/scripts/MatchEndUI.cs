@@ -140,7 +140,7 @@ public class MatchEndUI : MonoBehaviour
         Time.timeScale = 1f;
 
         SceneManager.LoadScene(
-            mainMenuSceneName
+            "MenuScene"
         );
     }
 

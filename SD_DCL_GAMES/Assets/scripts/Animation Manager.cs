@@ -12,8 +12,10 @@ public class AnimationManager : MonoBehaviour
     private Animator _animator;
 
     private Coroutine explosionCoroutine;
+    private Coroutine shootCoroutine;
 
     public bool IsExploding { get; private set; }
+    public bool IsShooting { get; private set; }
 
     private void Awake()
     {
@@ -36,7 +38,7 @@ public class AnimationManager : MonoBehaviour
 
     public void PlayIdle()
     {
-        if (IsExploding)
+        if (IsExploding || IsShooting)
             return;
 
         SetAllFalseExcept(0);
@@ -44,7 +46,7 @@ public class AnimationManager : MonoBehaviour
 
     public void PlayRun()
     {
-        if (IsExploding)
+        if (IsExploding || IsShooting)
             return;
 
         SetAllFalseExcept(1);
@@ -52,7 +54,7 @@ public class AnimationManager : MonoBehaviour
 
     public void PlaySprint()
     {
-        if (IsExploding)
+        if (IsExploding || IsShooting)
             return;
 
         SetAllFalseExcept(2);
@@ -63,7 +65,25 @@ public class AnimationManager : MonoBehaviour
         if (IsExploding)
             return;
 
+        if (shootCoroutine != null)
+        {
+            StopCoroutine(shootCoroutine);
+        }
+
+        shootCoroutine = StartCoroutine(Shoot());
+    }
+
+    private IEnumerator Shoot()
+    {
+        IsShooting = true;
+
         SetAllFalseExcept(3);
+
+        // Wait for the kick animation to finish.
+        yield return new WaitForSeconds(0.5f);
+
+        IsShooting = false;
+        shootCoroutine = null;
     }
 
     public void PlayExplotion()

@@ -6,6 +6,10 @@ public class GoalTextUI : MonoBehaviour
     [SerializeField] private GameObject goalTextP1;
     [SerializeField] private GameObject goalTextP2;
 
+    [Header("Goal Particle Effects")]
+    [SerializeField] private ParticleSystem goalEffectP1;
+    [SerializeField] private ParticleSystem goalEffectP2;
+
     [Header("Display Settings")]
     [SerializeField] private float displayTime = 2f;
 
@@ -13,25 +17,63 @@ public class GoalTextUI : MonoBehaviour
 
     private void Start()
     {
-        // Make sure both messages are hidden when the game starts.
+        // Hide both goal messages when the game starts.
         goalTextP1.SetActive(false);
         goalTextP2.SetActive(false);
+
+        // Listen for goals from the ScoreManager.
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.onGoalScored.AddListener(ShowGoal);
+        }
+        else
+        {
+            Debug.LogError(
+                "[GoalTextUI] ScoreManager.Instance was not found."
+            );
+        }
     }
 
     public void ShowGoal(string scoringPlayerTag)
     {
-        // Hide both first.
+        Debug.Log(
+            "[GoalTextUI] Goal received from: " +
+            scoringPlayerTag
+        );
+
+        // Hide both texts first.
         goalTextP1.SetActive(false);
         goalTextP2.SetActive(false);
 
-        // Show the correct message.
+        // Player 1 scored.
         if (scoringPlayerTag == ScoreManager.Player1Tag)
         {
             goalTextP1.SetActive(true);
+
+            if (goalEffectP1 != null)
+            {
+                goalEffectP1.Play();
+            }
         }
+
+        // Player 2 scored.
         else if (scoringPlayerTag == ScoreManager.Player2Tag)
         {
             goalTextP2.SetActive(true);
+
+            if (goalEffectP2 != null)
+            {
+                goalEffectP2.Play();
+            }
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[GoalTextUI] Unknown scoring player: " +
+                scoringPlayerTag
+            );
+
+            return;
         }
 
         // Restart the hide timer.
@@ -40,7 +82,9 @@ public class GoalTextUI : MonoBehaviour
             StopCoroutine(hideCoroutine);
         }
 
-        hideCoroutine = StartCoroutine(HideGoalAfterDelay());
+        hideCoroutine = StartCoroutine(
+            HideGoalAfterDelay()
+        );
     }
 
     private System.Collections.IEnumerator HideGoalAfterDelay()
@@ -63,5 +107,15 @@ public class GoalTextUI : MonoBehaviour
 
         goalTextP1.SetActive(false);
         goalTextP2.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.onGoalScored.RemoveListener(
+                ShowGoal
+            );
+        }
     }
 }
