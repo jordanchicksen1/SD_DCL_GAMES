@@ -2537,8 +2537,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.019776108, y: 0.10533556, z: 0.02}
-  m_Center: {x: -0.00011182872, y: -0.06102382, z: 0.0000000012483861}
+  m_Size: {x: 0.017217427, y: 0.10533556, z: 0.01706632}
+  m_Center: {x: 0.000131857, y: -0.06102382, z: 0.0000000023167415}
 --- !u!33 &453747860
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -3954,7 +3954,7 @@ PrefabInstance:
     - target: {fileID: -3111082180692322035, guid: f48958c8f19136e4eb72581a6634d6cf, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: abfc5939f6c65a941bd65f9bb597a5db, type: 2}
+      objectReference: {fileID: 2100000, guid: d0ad569e3115b064891de99e8ce7b03d, type: 2}
     - target: {fileID: -2093772787462966335, guid: f48958c8f19136e4eb72581a6634d6cf, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.1
@@ -6194,8 +6194,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.020000005, y: 0.10733177, z: 0.019999996}
-  m_Center: {x: -2.0296992e-10, y: -0.060025744, z: 7.769727e-10}
+  m_Size: {x: 0.017214626, y: 0.10733177, z: 0.017078523}
+  m_Center: {x: -9.1290014e-10, y: -0.060025744, z: 0.0000000011330912}
 --- !u!23 &1848083662
 MeshRenderer:
   m_ObjectHideFlags: 0
