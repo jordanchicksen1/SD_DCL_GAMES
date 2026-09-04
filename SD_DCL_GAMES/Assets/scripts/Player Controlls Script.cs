@@ -36,6 +36,7 @@ public class PlayerController3D : MonoBehaviour
     [SerializeField] private Transform playerAimIndicator;
     [SerializeField] private float _floorOffset;
     [SerializeField] private float kickRadius = 0.5f;
+    [SerializeField] private float ballPushForce = 2f;
 
     [Header("Animation")]
     public AnimationManager animationManager;
@@ -299,6 +300,32 @@ public class PlayerController3D : MonoBehaviour
         }
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (((1 << collision.gameObject.layer) & FootBallLayer) == 0)
+            return;
+
+        Rigidbody ballRb = collision.rigidbody;
+
+        if (ballRb == null)
+            return;
+
+        Vector3 pushDirection = collision.transform.position - transform.position;
+        pushDirection.y = 0f;
+
+        if (pushDirection.sqrMagnitude <= 0.001f)
+            return;
+
+        pushDirection.Normalize();
+
+        float force = _isRunning ? ballPushForce * SpeedMultiplier : ballPushForce;
+
+        ballRb.AddForce(
+            pushDirection * force,
+            ForceMode.Impulse
+        );
+    }
+
     // =========================================================
     // MOVEMENT
     // =========================================================
@@ -385,6 +412,8 @@ public class PlayerController3D : MonoBehaviour
         Vector3 point2 = bounds.center - Vector3.up * (bounds.extents.y * 0.5f);
 
         float radius = Mathf.Min(bounds.extents.x, bounds.extents.z);
+        int movementMask =
+            Physics.DefaultRaycastLayers & ~FootBallLayer.value;
 
         if (Physics.CapsuleCast(
             point1,
@@ -393,7 +422,7 @@ public class PlayerController3D : MonoBehaviour
             direction,
             out RaycastHit hit,
             distance,
-            Physics.DefaultRaycastLayers,
+            movementMask,
             QueryTriggerInteraction.Ignore))
         {
             // Remove the part of the movement going INTO the wall.

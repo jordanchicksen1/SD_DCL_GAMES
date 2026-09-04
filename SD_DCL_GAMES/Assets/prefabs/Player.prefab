@@ -224,7 +224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40e7d6cd6e135f244841558d7c31ba20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController3D
-  moveInput: {x: 0, y: 0, z: 0}
+  playerNumber: 0
   speed: 8
   jumpForce: 5
   SpeedMultiplier: 1.5
@@ -243,8 +243,8 @@ MonoBehaviour:
   playerAimIndicator: {fileID: 8651396515872104727}
   _floorOffset: 0.07
   kickRadius: 1.13
+  ballPushForce: 3
   animationManager: {fileID: 4355978040525352112}
-  playerNumber: 0
 --- !u!114 &9006802705691039895
 MonoBehaviour:
   m_ObjectHideFlags: 0
