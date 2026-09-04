@@ -1,6 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.InputSystem;
 
 public class RespawnManager : MonoBehaviour
 {
@@ -27,6 +28,9 @@ public class RespawnManager : MonoBehaviour
 
     private bool countdownStarted;
 
+    [Header("Player Setup")]
+    [SerializeField] private GameObject playerPrefab;
+
 
     private readonly List<Transform> players =
         new List<Transform>();
@@ -42,6 +46,96 @@ public class RespawnManager : MonoBehaviour
     // =========================================================
     // ADD PLAYER
     // =========================================================
+
+    private void Start()
+    {
+        if (PlayerInputManager.instance != null)
+        {
+            PlayerInputManager.instance.DisableJoining();
+        }
+
+        SpawnPlayers();
+    }
+
+    private void SpawnPlayers()
+    {
+        if (playerPrefab == null)
+        {
+            Debug.LogError("RESPAWN MANAGER: Player Prefab is not assigned!");
+            return;
+        }
+
+        if (player1SpawnPoint == null || player2SpawnPoint == null)
+        {
+            Debug.LogError("RESPAWN MANAGER: Spawn points are not assigned!");
+            return;
+        }
+
+        PlayerInput player1Input;
+        PlayerInput player2Input;
+
+        // PLAYER 1
+        if (Gamepad.all.Count >= 1)
+        {
+            player1Input = PlayerInput.Instantiate(
+                playerPrefab,
+                playerIndex: 0,
+                controlScheme: "Gamepad",
+                splitScreenIndex: -1,
+                pairWithDevices: Gamepad.all[0]
+            );
+        }
+        else
+        {
+            player1Input = Instantiate(playerPrefab).GetComponent<PlayerInput>();
+        }
+
+        // PLAYER 2
+        if (Gamepad.all.Count >= 2)
+        {
+            player2Input = PlayerInput.Instantiate(
+                playerPrefab,
+                playerIndex: 1,
+                controlScheme: "Gamepad",
+                splitScreenIndex: -1,
+                pairWithDevices: Gamepad.all[1]
+            );
+        }
+        else
+        {
+            player2Input = Instantiate(playerPrefab).GetComponent<PlayerInput>();
+        }
+
+        // Move players to their starting positions
+        player1Input.transform.position = player1SpawnPoint.position;
+        player1Input.transform.rotation = player1SpawnPoint.rotation;
+
+        player2Input.transform.position = player2SpawnPoint.position;
+        player2Input.transform.rotation = player2SpawnPoint.rotation;
+
+        // Give each player their player number
+        PlayerController3D controller1 =
+            player1Input.GetComponent<PlayerController3D>();
+
+        PlayerController3D controller2 =
+            player2Input.GetComponent<PlayerController3D>();
+
+        if (controller1 != null)
+        {
+            controller1.SetPlayerNumber(1);
+        }
+
+        if (controller2 != null)
+        {
+            controller2.SetPlayerNumber(2);
+        }
+
+        // Register both players with the Respawn Manager
+        AddPlayer(player1Input.transform);
+        AddPlayer(player2Input.transform);
+
+        DebugControllerDevices(player1Input, player2Input);
+    }
 
     public void AddPlayer(Transform player)
     {
@@ -483,5 +577,65 @@ public class RespawnManager : MonoBehaviour
                 player2SpawnPoint.forward
             );
         }
+    }
+
+    private void DebugControllerDevices(PlayerInput player1, PlayerInput player2)
+    {
+        Debug.Log("========== CONTROLLER DEBUG ==========");
+
+        Debug.Log("Total Gamepads detected: " + Gamepad.all.Count);
+
+        for (int i = 0; i < Gamepad.all.Count; i++)
+        {
+            Gamepad gamepad = Gamepad.all[i];
+
+            Debug.Log(
+                "Gamepad " + i +
+                " | Type: " + gamepad.GetType().Name +
+                " | Name: " + gamepad.displayName +
+                " | Device ID: " + gamepad.deviceId +
+                " | Path: " + gamepad.path
+            );
+        }
+
+        Debug.Log("--------------------------------------");
+
+        Debug.Log(
+            "PLAYER 1 devices: " +
+            player1.devices.Count
+        );
+
+        foreach (InputDevice device in player1.devices)
+        {
+            Debug.Log(
+                "PLAYER 1 → " +
+                device.displayName +
+                " | ID: " +
+                device.deviceId +
+                " | Path: " +
+                device.path
+            );
+        }
+
+        Debug.Log("--------------------------------------");
+
+        Debug.Log(
+            "PLAYER 2 devices: " +
+            player2.devices.Count
+        );
+
+        foreach (InputDevice device in player2.devices)
+        {
+            Debug.Log(
+                "PLAYER 2 → " +
+                device.displayName +
+                " | ID: " +
+                device.deviceId +
+                " | Path: " +
+                device.path
+            );
+        }
+
+        Debug.Log("========== END CONTROLLER DEBUG ==========");
     }
 }

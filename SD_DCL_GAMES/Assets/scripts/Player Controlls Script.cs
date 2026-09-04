@@ -5,13 +5,11 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerController3D : MonoBehaviour
 {
-    [SerializeField]
-    private Vector3 moveInput;
-
-    private Vector2 lookInput;
-
     private Rigidbody rb;
     private PlayerInput playerInput;
+
+    [Header("Player")]
+    [SerializeField] private int playerNumber;
 
     [Header("Movement")]
     public float speed = 5f;
@@ -29,40 +27,26 @@ public class PlayerController3D : MonoBehaviour
     [Header("Football")]
     public LayerMask FootBallLayer;
 
-    [SerializeField]
-    private Transform RayPoint;
-
-    [SerializeField]
-    private float RayDistance = 1.1f;
-
+    [SerializeField] private Transform RayPoint;
+    [SerializeField] private float RayDistance = 1.1f;
     public int _kickForce = 10;
-
-    [SerializeField]
-    private float upAngle = 30f;
-
-    [SerializeField]
-    private Transform playerPositionIndicator;
-
-    [SerializeField]
-    private Transform playerAimIndicator;
-
-    [SerializeField]
-    private float _floorOffset;
-
-    [SerializeField]
-    private float kickRadius = 0.5f;
+    [SerializeField] private float upAngle = 30f;
+    [SerializeField] private Transform playerPositionIndicator;
+    [SerializeField] private Transform playerAimIndicator;
+    [SerializeField] private float _floorOffset;
+    [SerializeField] private float kickRadius = 0.5f;
 
     [Header("Animation")]
     public AnimationManager animationManager;
 
     private bool _isRunning;
-
-    private RespawnManager _spawnManager;
     private bool canMove = false;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         playerInput = GetComponent<PlayerInput>();
+
 
         if (animationManager == null)
         {
@@ -74,85 +58,206 @@ public class PlayerController3D : MonoBehaviour
     {
         rb.freezeRotation = true;
 
-        _spawnManager = FindFirstObjectByType<RespawnManager>();
-
-        if (_spawnManager != null)
-        {
-            _spawnManager.AddPlayer(transform);
-        }
-        else
-        {
-            Debug.LogWarning(
-                "PlayerController3D: No RespawnManager found in the scene."
-            );
-        }
-
         if (animationManager != null)
         {
             animationManager.PlayIdle();
         }
     }
 
+    public void SetPlayerNumber(int number)
+    {
+        playerNumber = number;
+    }
+
+    // =========================================================
+    // INPUT
+    // =========================================================
+
+    private Vector2 GetKeyboardInput()
+    {
+        if (Keyboard.current == null)
+            return Vector2.zero;
+
+        if (playerNumber == 1)
+        {
+            float x = 0f;
+            float y = 0f;
+
+            if (Keyboard.current.aKey.isPressed)
+                x -= 1f;
+
+            if (Keyboard.current.dKey.isPressed)
+                x += 1f;
+
+            if (Keyboard.current.sKey.isPressed)
+                y -= 1f;
+
+            if (Keyboard.current.wKey.isPressed)
+                y += 1f;
+
+            return new Vector2(x, y).normalized;
+        }
+
+        if (playerNumber == 2)
+        {
+            float x = 0f;
+            float y = 0f;
+
+            if (Keyboard.current.jKey.isPressed)
+                x -= 1f;
+
+            if (Keyboard.current.lKey.isPressed)
+                x += 1f;
+
+            if (Keyboard.current.kKey.isPressed)
+                y -= 1f;
+
+            if (Keyboard.current.iKey.isPressed)
+                y += 1f;
+
+            return new Vector2(x, y).normalized;
+        }
+
+        return Vector2.zero;
+    }
+
+    private Vector2 GetGamepadInput()
+    {
+        if (playerInput == null)
+            return Vector2.zero;
+
+        if (!playerInput.actions.enabled)
+            return Vector2.zero;
+
+        return playerInput.actions["Move"].ReadValue<Vector2>();
+    }
+
+    private Vector2 GetMovementInput()
+    {
+        Vector2 keyboardInput = GetKeyboardInput();
+
+        // Keyboard takes priority if it is being used.
+        if (keyboardInput.sqrMagnitude > 0.001f)
+            return keyboardInput;
+
+        return GetGamepadInput();
+    }
+
+    private void Update()
+    {
+        if (!canMove)
+            return;
+
+        HandleKeyboardAndGamepadActions();
+    }
+
     public void OnMove(InputAction.CallbackContext context)
     {
-
-
-        Vector2 input = context.ReadValue<Vector2>();
-
-        moveInput = new Vector3(
-            input.x,
-            0f,
-            input.y
-        );
+        // Movement is now read directly from PlayerInput.
     }
 
     public void OnLook(InputAction.CallbackContext context)
     {
-        lookInput = context.ReadValue<Vector2>();
-    }
-
-    public void OnJump(InputAction.CallbackContext context)
-    {
-        if (!canMove)
-            return;
-
-
-        if (context.performed && IsGrounded())
-        {
-            rb.linearVelocity = new Vector3(
-                rb.linearVelocity.x,
-                jumpForce,
-                rb.linearVelocity.z
-            );
-        }
-    }
-
-    public void OnRun(InputAction.CallbackContext context)
-    {
-        if (!canMove)
-            return;
-
-
-        if (context.performed)
-        {
-            speed *= SpeedMultiplier;
-            _isRunning = true;
-        }
-        else if (context.canceled)
-        {
-            speed /= SpeedMultiplier;
-            _isRunning = false;
-        }
+        // Currently unused.
     }
 
     public void OnKick(InputAction.CallbackContext context)
     {
-        if (!context.performed)
-            return;
+        // Kick is now read directly from PlayerInput.
+    }
 
+    public void OnJump(InputAction.CallbackContext context)
+    {
+        // Jump is now read directly from PlayerInput.
+    }
+
+    public void OnRun(InputAction.CallbackContext context)
+    {
+        // Sprint is now read directly from PlayerInput.
+    }
+
+    private void HandleKeyboardAndGamepadActions()
+    {
+        bool keyboardSprint = false;
+        bool gamepadSprint = false;
+
+        // -------------------------
+        // KEYBOARD
+        // -------------------------
+        if (Keyboard.current != null)
+        {
+            if (playerNumber == 1)
+            {
+                if (Keyboard.current.fKey.wasPressedThisFrame)
+                    Kick();
+
+                if (Keyboard.current.cKey.wasPressedThisFrame)
+                    Jump();
+
+                keyboardSprint = Keyboard.current.qKey.isPressed;
+            }
+            else if (playerNumber == 2)
+            {
+                if (Keyboard.current.semicolonKey.wasPressedThisFrame)
+                    Kick();
+
+                if (Keyboard.current.periodKey.wasPressedThisFrame)
+                    Jump();
+
+                keyboardSprint = Keyboard.current.uKey.isPressed;
+            }
+        }
+
+        // -------------------------
+        // GAMEPAD
+        // -------------------------
+        if (playerInput != null && playerInput.actions.enabled)
+        {
+            if (playerInput.actions["Kick"].WasPressedThisFrame())
+            {
+                Kick();
+            }
+
+            if (playerInput.actions["Jump"].WasPressedThisFrame())
+            {
+                Jump();
+            }
+
+            gamepadSprint =
+                playerInput.actions["Sprint"].IsPressed();
+        }
+
+        // Sprint if EITHER input is being held
+        _isRunning = keyboardSprint || gamepadSprint;
+    }
+
+    // =========================================================
+    // JUMP
+    // =========================================================
+
+    private void Jump()
+    {
         if (!canMove)
             return;
 
+        if (!IsGrounded())
+            return;
+
+        rb.linearVelocity = new Vector3(
+            rb.linearVelocity.x,
+            jumpForce,
+            rb.linearVelocity.z
+        );
+    }
+
+    // =========================================================
+    // KICK
+    // =========================================================
+
+    private void Kick()
+    {
+        if (!canMove)
+            return;
 
         Collider[] hits = Physics.OverlapSphere(
             RayPoint.position,
@@ -191,6 +296,10 @@ public class PlayerController3D : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // MOVEMENT
+    // =========================================================
+
     private void FixedUpdate()
     {
         if (!canMove)
@@ -204,10 +313,12 @@ public class PlayerController3D : MonoBehaviour
             return;
         }
 
+        Vector2 movementInput = GetMovementInput();
+
         Vector3 inputDir = new Vector3(
-            moveInput.x,
+            movementInput.x,
             0f,
-            moveInput.z
+            movementInput.y
         );
 
         // Don't move while exploding.
@@ -223,9 +334,13 @@ public class PlayerController3D : MonoBehaviour
             return;
         }
 
+        float currentSpeed = _isRunning
+            ? speed * SpeedMultiplier
+            : speed;
+
         rb.MovePosition(
             rb.position +
-            (inputDir * speed) *
+            (inputDir * currentSpeed) *
             Time.fixedDeltaTime
         );
 
@@ -244,17 +359,17 @@ public class PlayerController3D : MonoBehaviour
         DisplayPlayerPosition();
     }
 
+    // =========================================================
+    // DUST
+    // =========================================================
+
     private void HandleMovementDust(Vector3 inputDir)
     {
         if (DustPool.Instance == null)
-        {
-            Debug.LogWarning("PLAYER: DustPool.Instance is NULL!");
             return;
-        }
 
         if (!IsGrounded())
         {
-            Debug.Log("PLAYER: Not grounded, no dust.");
             nextDustTime = 0f;
             return;
         }
@@ -274,13 +389,17 @@ public class PlayerController3D : MonoBehaviour
                 - movementDirection * dustSpawnBehindDistance
                 + Vector3.up * dustSpawnHeight;
 
-            Debug.Log("PLAYER: Spawning dust at " + spawnPosition);
-
             DustPool.Instance.Spawn(spawnPosition);
 
-            nextDustTime = Time.time + dustInterval;
+            nextDustTime =
+                Time.time + dustInterval;
         }
     }
+
+    // =========================================================
+    // ANIMATION
+    // =========================================================
+
     private void UpdateAnimationState(Vector3 inputDir)
     {
         if (animationManager == null)
@@ -305,6 +424,10 @@ public class PlayerController3D : MonoBehaviour
             animationManager.PlayRun();
         }
     }
+
+    // =========================================================
+    // POSITION INDICATORS
+    // =========================================================
 
     private void DisplayPlayerPosition()
     {
@@ -337,6 +460,10 @@ public class PlayerController3D : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // GROUNDED
+    // =========================================================
+
     private bool IsGrounded()
     {
         return Physics.Raycast(
@@ -345,6 +472,30 @@ public class PlayerController3D : MonoBehaviour
             2.2f
         );
     }
+
+    // =========================================================
+    // MOVEMENT LOCK
+    // =========================================================
+
+    public void SetCanMove(bool value)
+    {
+        canMove = value;
+
+        if (!canMove)
+        {
+            _isRunning = false;
+
+            rb.linearVelocity = new Vector3(
+                0f,
+                rb.linearVelocity.y,
+                0f
+            );
+        }
+    }
+
+    // =========================================================
+    // GIZMOS
+    // =========================================================
 
     private void OnDrawGizmosSelected()
     {
@@ -377,24 +528,5 @@ public class PlayerController3D : MonoBehaviour
             RayPoint.position,
             kickRadius
         );
-    }
-
-    public void SetCanMove(bool value)
-    {
-        canMove = value;
-
-        if (!canMove)
-        {
-            // Clear any input that was being held.
-            moveInput = Vector3.zero;
-            lookInput = Vector2.zero;
-
-            // Stop horizontal movement.
-            rb.linearVelocity = new Vector3(
-                0f,
-                rb.linearVelocity.y,
-                0f
-            );
-        }
     }
 }

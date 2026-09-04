@@ -152,10 +152,7 @@ public class GameTimer : MonoBehaviour
             lastLoggedSecond =
                 wholeSecond;
 
-            Debug.Log(
-                "[GameTimer] Time remaining: " +
-                formatted
-            );
+           
         }
     }
 }

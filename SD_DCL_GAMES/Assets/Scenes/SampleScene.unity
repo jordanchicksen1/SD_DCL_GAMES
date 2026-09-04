@@ -5396,6 +5396,7 @@ MonoBehaviour:
   respawnDelay: 0.1
   countdownText: {fileID: 466623691}
   countdownTime: 1
+  playerPrefab: {fileID: 2640788942037532697, guid: a94c7706563a0524ca75f9e1024aabbf, type: 3}
 --- !u!4 &1780998234 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -1255605710908113952, guid: f48958c8f19136e4eb72581a6634d6cf, type: 3}

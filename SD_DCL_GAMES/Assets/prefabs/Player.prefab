@@ -228,6 +228,10 @@ MonoBehaviour:
   speed: 8
   jumpForce: 5
   SpeedMultiplier: 1.5
+  dustInterval: 0.15
+  dustMoveThreshold: 0.01
+  dustSpawnBehindDistance: 0.5
+  dustSpawnHeight: 0.05
   FootBallLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -240,6 +244,7 @@ MonoBehaviour:
   _floorOffset: 0.07
   kickRadius: 1.13
   animationManager: {fileID: 4355978040525352112}
+  playerNumber: 0
 --- !u!114 &9006802705691039895
 MonoBehaviour:
   m_ObjectHideFlags: 0
