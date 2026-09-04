@@ -237,12 +237,12 @@ MonoBehaviour:
     m_Bits: 8
   RayPoint: {fileID: 6341517404636737131}
   RayDistance: 1
-  _kickForce: 16
-  upAngle: 15
+  _kickForce: 25
+  upAngle: 13
   playerPositionIndicator: {fileID: 422131684061801168}
   playerAimIndicator: {fileID: 8651396515872104727}
   _floorOffset: 0.07
-  kickRadius: 1.13
+  kickRadius: 1.52
   ballPushForce: 3
   animationManager: {fileID: 4355978040525352112}
 --- !u!114 &9006802705691039895
