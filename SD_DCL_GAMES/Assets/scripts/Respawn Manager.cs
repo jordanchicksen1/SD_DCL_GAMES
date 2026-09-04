@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
 using TMPro;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class RespawnManager : MonoBehaviour
@@ -47,12 +48,18 @@ public class RespawnManager : MonoBehaviour
     // ADD PLAYER
     // =========================================================
 
-    private void Start()
+    private IEnumerator Start()
     {
         if (PlayerInputManager.instance != null)
         {
             PlayerInputManager.instance.DisableJoining();
         }
+
+        // Wait one frame first
+        yield return null;
+
+        // Give WebGL time to detect connected controllers
+        yield return new WaitForSeconds(0.5f);
 
         SpawnPlayers();
     }
