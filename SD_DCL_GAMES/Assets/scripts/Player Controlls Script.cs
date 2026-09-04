@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInput))]
@@ -41,6 +42,8 @@ public class PlayerController3D : MonoBehaviour
 
     private bool _isRunning;
     private bool canMove = false;
+
+    private readonly List<RaycastHit> movementHits = new List<RaycastHit>();
 
     private void Awake()
     {
@@ -338,10 +341,14 @@ public class PlayerController3D : MonoBehaviour
             ? speed * SpeedMultiplier
             : speed;
 
+        Vector3 desiredMovement =
+    inputDir * currentSpeed * Time.fixedDeltaTime;
+
+        Vector3 safeMovement =
+            GetSafeMovement(desiredMovement);
+
         rb.MovePosition(
-            rb.position +
-            (inputDir * currentSpeed) *
-            Time.fixedDeltaTime
+            rb.position + safeMovement
         );
 
         HandleMovementDust(inputDir);
@@ -357,6 +364,46 @@ public class PlayerController3D : MonoBehaviour
         UpdateAnimationState(inputDir);
 
         DisplayPlayerPosition();
+    }
+
+    private Vector3 GetSafeMovement(Vector3 movement)
+    {
+        if (movement.sqrMagnitude <= 0.0001f)
+            return Vector3.zero;
+
+        Vector3 direction = movement.normalized;
+        float distance = movement.magnitude;
+
+        Collider playerCollider = GetComponent<Collider>();
+
+        if (playerCollider == null)
+            return movement;
+
+        Bounds bounds = playerCollider.bounds;
+
+        Vector3 point1 = bounds.center + Vector3.up * (bounds.extents.y * 0.5f);
+        Vector3 point2 = bounds.center - Vector3.up * (bounds.extents.y * 0.5f);
+
+        float radius = Mathf.Min(bounds.extents.x, bounds.extents.z);
+
+        if (Physics.CapsuleCast(
+            point1,
+            point2,
+            radius,
+            direction,
+            out RaycastHit hit,
+            distance,
+            Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction.Ignore))
+        {
+            // Remove the part of the movement going INTO the wall.
+            Vector3 slideMovement =
+                Vector3.ProjectOnPlane(movement, hit.normal);
+
+            return slideMovement;
+        }
+
+        return movement;
     }
 
     // =========================================================

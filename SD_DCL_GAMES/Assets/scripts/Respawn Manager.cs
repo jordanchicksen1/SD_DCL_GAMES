@@ -93,6 +93,8 @@ public class RespawnManager : MonoBehaviour
         // PLAYER 2
         if (Gamepad.all.Count >= 2)
         {
+            // Two controllers connected:
+            // Player 2 gets controller 2.
             player2Input = PlayerInput.Instantiate(
                 playerPrefab,
                 playerIndex: 1,
@@ -103,7 +105,15 @@ public class RespawnManager : MonoBehaviour
         }
         else
         {
-            player2Input = Instantiate(playerPrefab).GetComponent<PlayerInput>();
+            // No second controller:
+            // Player 2 uses keyboard only.
+            GameObject player2Object = Instantiate(playerPrefab);
+            player2Input = player2Object.GetComponent<PlayerInput>();
+
+            if (player2Input != null)
+            {
+                player2Input.enabled = false;
+            }
         }
 
         // Move players to their starting positions
