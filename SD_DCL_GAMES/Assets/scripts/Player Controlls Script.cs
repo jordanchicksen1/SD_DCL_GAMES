@@ -365,8 +365,8 @@ public class PlayerController3D : MonoBehaviour
         }
 
         float currentSpeed = _isRunning
-            ? speed * SpeedMultiplier
-            : speed;
+    ? 15f
+    : 10f;
 
         Vector3 desiredMovement =
     inputDir * currentSpeed * Time.fixedDeltaTime;
